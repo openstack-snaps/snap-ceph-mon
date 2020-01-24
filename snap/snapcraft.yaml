@@ -1,0 +1,48 @@
+name: ceph-mon
+version: bionic
+summary: Ceph MON
+description: Ceph Monitor Daemon
+grade: devel
+confinement: strict
+base: core18
+
+
+environment:
+  # Edit the following lines with tools/update_path.py
+  LD_LIBRARY_PATH: $SNAP/lib:$SNAP/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/ceph
+  PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
+  LC_ALL: C
+
+passthrough:
+    system-usernames:
+        snap_daemon: shared
+
+layout:
+  /var/lib/ceph:
+    bind: $SNAP_COMMON/var/lib/ceph
+  /usr/share/ceph:
+    bind: $SNAP/usr/share/ceph
+  /etc/ceph:
+    bind: $SNAP_COMMON/etc/ceph
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/ceph:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/ceph
+
+apps:
+    ceph-mon:
+        command: ceph-mon -f --cluster ceph --id `hostname` --setuser snap_daemon --setgroup snap_daemon
+        daemon: simple
+        plugs:
+            - network-bind
+            - system-trace
+    ceph:
+        command: ceph
+        plugs:
+            - network
+
+parts:
+    ceph:
+        source: .
+        plugin: nil
+        stage-packages:
+            - ceph-mon
+            - ceph-common

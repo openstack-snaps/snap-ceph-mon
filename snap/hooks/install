@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+exit 0
+
+mkdir -p $SNAP_COMMOM/etc/ceph
+
+HOSTNAME=`hostname`
+MON_DIR=$SNAP_COMMON/var/lib/ceph/mon
+
+mkdir -p $MON_DIR/ceph-$HOSTNAME
+chown -R snap_daemon:snap_daemon $MON_DIR

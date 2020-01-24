@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -ex
+
+id
+env
+
+mkdir -p $SNAP_COMMOM/etc/ceph
+
+HOSTNAME=`hostname`
+MON_DIR=/var/lib/ceph/mon
+MON_KEYRING=$MON_DIR/ceph-$HOSTNAME/keyring
+
+mkdir -p $MON_DIR/ceph-$HOSTNAME
+
+ls -l /etc/ceph
+ls -lRt $MON_DIR
+ls -lRt /var/lib/ceph
+
+
+[ -f "$MON_KEYRING" ] || {
+    ceph-authtool --create-keyring $MON_KEYRING \
+            --gen-key -n mon.
+    ceph-authtool --create-keyring /etc/ceph/ceph.client.admin.keyring \
+        --gen-key -n client.admin --set-uid=0 \
+        --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
+    ceph-mon --mkfs -i $HOSTNAME
+}
+
+chown -R snap_daemon:snap_daemon $MON_DIR
